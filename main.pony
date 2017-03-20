@@ -1,9 +1,9 @@
-use "net"
-use "net/ssl"
-use "files"
-use "encode/base64"
+/*use "net"
 use "json"
+use "files"
+use "net/ssl"
 use "buffered"
+use "encode/base64"
 
 class MyTCPConnectionNotify is TCPConnectionNotify
   let _out: Env
@@ -83,7 +83,7 @@ class MyTCPConnectionNotify is TCPConnectionNotify
       false
 
 
-actor Main
+/*actor Main
   new create(env: Env) =>
 
 
@@ -109,4 +109,4 @@ actor Main
         "gateway.discord.gg",
         "443")
 
-    end
+    end*/*/
