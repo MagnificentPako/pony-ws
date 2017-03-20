@@ -6,7 +6,7 @@ use "net/ssl"
 class TestWSNotify is WebsocketNotify
 
   let _env: Env
-  new create(env': Env) =>
+  new iso create(env': Env) =>
     _env = env'
 
   fun received(conn: TCPConnection, data: String) =>

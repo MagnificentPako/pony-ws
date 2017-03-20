@@ -12,14 +12,15 @@ class WebsocketHandler is TCPConnectionNotify
   var _current_size: USize = 0
   var _notify: WebsocketNotify
 
-  new create(host': String, target': String, notify': WebsocketNotify) =>
+  new iso create(host': String, target': String, notify': WebsocketNotify iso) =>
     _host = host'
     _target = target'
-    _notify = notify'
+    _notify = consume notify'
 
   fun ref connected(conn: TCPConnection ref) =>
     var sockKey: String = Base64.encode("1234567890abcdef")
     var handshake: Handshake = Handshake(_host,_target,sockKey)
+    conn.write(handshake.build())
 
   fun ref received(conn: TCPConnection ref, data: Array[U8] iso): Bool =>
     if(not _connected) then
@@ -52,6 +53,7 @@ class WebsocketHandler is TCPConnectionNotify
         if(not final) then
           _current_content = _current_content + datt
         else
+          _current_content = _current_content + datt
           _notify.received(conn, _current_content)
           _current_content = ""
         end
@@ -60,12 +62,16 @@ class WebsocketHandler is TCPConnectionNotify
     true
 
   fun sent(conn: TCPConnection ref, data: ByteSeq): ByteSeq =>
-    conn.writev(Frame(
-      true, OPTEXT, match data
-      | let data': String    => data'
-      | let data': Array[U8] val => String.from_array(data')
-      else
-        ""
-      end
-      ).build())
-    ""
+    if(_connected) then
+      conn.writev(Frame(
+        true, OPTEXT, match data
+        | let data': String    => data'
+        | let data': Array[U8] val => String.from_array(data')
+        else
+          ""
+        end
+        ).build())
+      ""
+    else
+      data
+    end
