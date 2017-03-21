@@ -1,6 +1,7 @@
 use "net"
 use "buffered"
 use "encode/base64"
+use "debug"
 
 class WebsocketHandler is TCPConnectionNotify
 
@@ -11,13 +12,11 @@ class WebsocketHandler is TCPConnectionNotify
   var _current_fragments: USize = 0
   var _current_size: USize = 0
   var _notify: WebsocketNotify
-  var _env: Env
 
-  new iso create(env': Env, host': String, target': String, notify': WebsocketNotify iso) =>
+  new iso create(host': String, target': String, notify': WebsocketNotify iso) =>
     _host = host'
     _target = target'
     _notify = consume notify'
-    _env = env'
 
   fun ref connected(conn: TCPConnection ref) =>
     var sockKey: String = Base64.encode("1234567890abcdef")
@@ -42,16 +41,20 @@ class WebsocketHandler is TCPConnectionNotify
         var use_mask: Bool = if (((mask_payloadlen >> 7) and 0b00000001) == 1) then true else false end
         var payloadlen: U8 = (mask_payloadlen and 0b01111111)
         var payload_type: U8 = if payloadlen == 0b01111111 then
-                          1 else if payloadlen == 0b01111110 then
-                          2 else
+                          2 else if payloadlen == 0b01111110 then
+                          1 else
                           0 end end
         var payload_size: U64 = match payload_type
         | 0 => payloadlen.u64()
         | 1 => rb.u16_be().u64()
         | 2 => rb.u64_be().u64()
         else 0 end
+        Debug("Payload type: " + payload_type.string())
+        Debug("Payload size: " + payload_size.string())
         var mask_key = if use_mask then rb.u32_be() else None end
         datt = String.from_array(rb.block(payload_size.usize()))
+        Debug("Actual size: " + datt.size().string())
+        Debug("DATA: " + datt)
         if(not final) then
           _current_content = _current_content + datt
         else
@@ -65,15 +68,17 @@ class WebsocketHandler is TCPConnectionNotify
 
   fun sent(conn: TCPConnection ref, data: ByteSeq): ByteSeq =>
     if(_connected) then
-      _env.out.write(".")
-      conn.writev(Frame(
+      for dat in Frame(
         true, OPTEXT, match data
         | let data': String    => data'
         | let data': Array[U8] val => String.from_array(data')
         else
           ""
         end
-        ).build())
+        ).build().values() do
+          Debug(dat)
+          conn.write_final(dat)
+        end
       return ""
     else
       return data
