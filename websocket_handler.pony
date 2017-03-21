@@ -12,6 +12,7 @@ class WebsocketHandler is TCPConnectionNotify
   var _current_fragments: USize = 0
   var _current_size: USize = 0
   var _notify: WebsocketNotify
+  var _writing: Bool = false
 
   new iso create(host': String, target': String, notify': WebsocketNotify iso) =>
     _host = host'
@@ -28,6 +29,7 @@ class WebsocketHandler is TCPConnectionNotify
       _connected = true //"swallows" the first response, which is supposed to be
                         //a HTTP Upgrade response
     else
+      _writing = false
       let rb: Reader = Reader
       rb.append(consume data)
       var final: Bool = true
@@ -41,20 +43,20 @@ class WebsocketHandler is TCPConnectionNotify
         var use_mask: Bool = if (((mask_payloadlen >> 7) and 0b00000001) == 1) then true else false end
         var payloadlen: U8 = (mask_payloadlen and 0b01111111)
         var payload_type: U8 = if payloadlen == 0b01111111 then
-                          2 else if payloadlen == 0b01111110 then
-                          1 else
+                          1 else if payloadlen == 0b01111110 then
+                          2 else
                           0 end end
         var payload_size: U64 = match payload_type
         | 0 => payloadlen.u64()
         | 1 => rb.u16_be().u64()
         | 2 => rb.u64_be().u64()
         else 0 end
-        Debug("Payload type: " + payload_type.string())
-        Debug("Payload size: " + payload_size.string())
+        //Debug("Payload type: " + payload_type.string())
+        //Debug("Payload size: " + payload_size.string())
         var mask_key = if use_mask then rb.u32_be() else None end
         datt = String.from_array(rb.block(payload_size.usize()))
-        Debug("Actual size: " + datt.size().string())
-        Debug("DATA: " + datt)
+        //Debug("Actual size: " + datt.size().string())
+        Debug(final.string())
         if(not final) then
           _current_content = _current_content + datt
         else
@@ -66,20 +68,20 @@ class WebsocketHandler is TCPConnectionNotify
     end
     true
 
-  fun sent(conn: TCPConnection ref, data: ByteSeq): ByteSeq =>
+  fun ref sent(conn: TCPConnection ref, data: ByteSeq): ByteSeq =>
+    if(_writing) then return data end
     if(_connected) then
-      for dat in Frame(
+      Debug(".")
+      _writing = true
+      conn.writev(Frame(
         true, OPTEXT, match data
         | let data': String    => data'
         | let data': Array[U8] val => String.from_array(data')
         else
           ""
         end
-        ).build().values() do
-          Debug(dat)
-          conn.write_final(dat)
-        end
-      return ""
+        ).build())
+      ""
     else
       return data
     end
