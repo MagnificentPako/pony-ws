@@ -2,4 +2,4 @@ use "net"
 
 interface WebsocketNotify
 
-  fun received(conn: TCPConnection ref, data: String)
+  fun ref received(conn: TCPConnection ref, data: String)

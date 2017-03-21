@@ -11,11 +11,13 @@ class WebsocketHandler is TCPConnectionNotify
   var _current_fragments: USize = 0
   var _current_size: USize = 0
   var _notify: WebsocketNotify
+  var _env: Env
 
-  new iso create(host': String, target': String, notify': WebsocketNotify iso) =>
+  new iso create(env': Env, host': String, target': String, notify': WebsocketNotify iso) =>
     _host = host'
     _target = target'
     _notify = consume notify'
+    _env = env'
 
   fun ref connected(conn: TCPConnection ref) =>
     var sockKey: String = Base64.encode("1234567890abcdef")
@@ -63,6 +65,7 @@ class WebsocketHandler is TCPConnectionNotify
 
   fun sent(conn: TCPConnection ref, data: ByteSeq): ByteSeq =>
     if(_connected) then
+      _env.out.write(".")
       conn.writev(Frame(
         true, OPTEXT, match data
         | let data': String    => data'
@@ -71,7 +74,7 @@ class WebsocketHandler is TCPConnectionNotify
           ""
         end
         ).build())
-      ""
+      return ""
     else
-      data
+      return data
     end
