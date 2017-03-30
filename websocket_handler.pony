@@ -52,7 +52,7 @@ class WebsocketHandler is TCPConnectionNotify
         | 2 => rb.u64_be().u64()
         else 0 end
         //Debug("Payload type: " + payload_type.string())
-        //Debug("Payload size: " + payload_size.string())
+        Debug("Payload size: " + payload_size.string())
         var mask_key = if use_mask then rb.u32_be() else None end
         datt = String.from_array(rb.block(payload_size.usize()))
         //Debug("Actual size: " + datt.size().string())
@@ -60,8 +60,8 @@ class WebsocketHandler is TCPConnectionNotify
         if(not final) then
           _current_content = _current_content + datt
         else
-          _current_content = _current_content + datt
-          _notify.received(conn, _current_content)
+          _current_content = _current_content + datt) 
+	  _notify.received(conn, _current_content)
           _current_content = ""
         end
       end
