@@ -93,9 +93,8 @@ class WebsocketHandler is TCPConnectionNotify
         //Load data
         try
           _data = String.from_array(rb.block(_payload_size.usize()))
-          if(not _final) then
-            _current_content = _current_content + _data
-          else
+          _current_content = _current_content + _data
+          if(_final) then
             _notify.received(conn, _current_content)
             _data = ""
             _current_content = ""
