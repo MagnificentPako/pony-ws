@@ -26,33 +26,29 @@ class Frame
   fun get_data(): String => _data
   fun is_final(): Bool => _final
 
-    fun parse(data: Array[U8] iso): Frame =>
-      let rb = Reader
-      rb.append(consume data)
-      var final: Bool = true
-      var opcode: Opcode = OPCLOSE
-      var dat: String = ""
-      try
-        var fin_op = rb.u8()
-        var mask_payloadlen = rb.u8()
-        final = if (((fin_op >> 7) and 0b00000001) == 1) then true else false end
-        var rsv = (true, true, true)
-        opcode = OPTEXT
-        var use_mask = if (((mask_payloadlen >> 7) and 0b00000001) == 1) then true else false end
-        var payloadlen: U8 = (mask_payloadlen and 0b01111111)
-        var payload_type: U8 = if payloadlen == 0b01111111 then
-                          1 else if payloadlen == 0b01111110 then
-                          2 else
-                          0 end end
-        var payload_size = match _payload_type
-        | 0 => payloadlen.u64()
-        | 1 => rb.u16_be().u64()
-        | 2 => rb.u64_be().u64()
-        else 0 end
-        var mask_key = if _use_mask then rb.u32_be() else None end
-        dat = String.from_array(rb.block(_payload_size.usize()))
-      end
-      Frame(final, opcode, dat)
+  /*new parse(data: Array[U8] iso): Frame =>
+    let rb = Reader
+    rb.append(consume data)
+    try
+      var fin_op = rb.u8()
+      var mask_payloadlen = rb.u8()
+      _final = if (((fin_op >> 7) and 0b00000001) == 1) then true else false end
+      _rsv = (true, true, true)
+      _opcode = OPTEXT
+      _use_mask = if (((mask_payloadlen >> 7) and 0b00000001) == 1) then true else false end
+      var payloadlen: U8 = (mask_payloadlen and 0b01111111)
+      _payload_type: U8 = if payloadlen == 0b01111111 then
+                        1 else if payloadlen == 0b01111110 then
+                        2 else
+                        0 end end
+      _payload_size = match _payload_type
+      | 0 => payloadlen.u64()
+      | 1 => rb.u16_be().u64()
+      | 2 => rb.u64_be().u64()
+      else 0 end
+      _mask_key = if _use_mask then rb.u32_be() else None end
+      _data = String.from_array(rb.block(_payload_size.usize()))
+    end*/
 
   fun build(): Array[ByteSeq] iso^ =>
     let writer = Writer
