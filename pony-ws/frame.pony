@@ -28,7 +28,7 @@ class trn Frame
     var _rsv: (Bool, Bool, Bool) = (false, false, false)
     var _opcode: OpCode = OpText
     var _use_mask: Bool = true
-    var _payload_type: PayloadType = payloadSmall
+    var _payload_type: PayloadType = PayloadSmall
     var _payload_size:  USize = 0
     var _mask_key: (None | U32) = None
     var _data: String = ""
