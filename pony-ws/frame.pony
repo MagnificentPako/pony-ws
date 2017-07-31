@@ -32,7 +32,6 @@ class trn Frame
     var _payload_size:  USize = 0
     var _mask_key: (None | U32) = None
     var _data: String = ""
-    var session: (WebsocketSession | None) = None
 
     new iso text(data: String = "") =>
         """
@@ -70,9 +69,3 @@ class trn Frame
         end
         writer.write(_data)
         writer.done()
-    
-    fun _write(conn: TCPConnection tag) =>
-        """
-        Write frame to connection.
-        """
-        
