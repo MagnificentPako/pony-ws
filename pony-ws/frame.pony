@@ -12,7 +12,7 @@ type OpCode is (OpContinuation |
                 OpBinary       |
                 OpClose        |
                 OpPing         |
-                OpPong         |)
+                OpPong         )
 
 primitive PayloadSmall
 primitive PayloadMedium
@@ -41,9 +41,9 @@ class trn Frame
         _data = data
         _opcode = OpText
         _use_mask = true
-        _mask_key = 
+        _mask_key = 0
     
-    fun set_mask_key(key: (None | U32)) =>
+    fun ref set_mask_key(key: (None | U32)) =>
         """
         Set the mask key.
         """

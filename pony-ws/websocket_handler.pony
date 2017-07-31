@@ -5,7 +5,7 @@ use "debug"
 
 primitive HTTPHeader
 primitive WebSocket
-type ParserState = (HTTPHeader | WebSocket)
+type ParserState is (HTTPHeader | WebSocket)
 
 class WebsocketHandler is TCPConnectionNotify
 
