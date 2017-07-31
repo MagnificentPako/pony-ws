@@ -25,7 +25,7 @@ class WebsocketHandler is TCPConnectionNotify
   var _expected_size: USize = -1
 
   var _payload_len: U8 = -1
-  var _payload_type: PayloadType = 0
+  var _payload_type: PayloadType = PayloadSmall
   var _payload_size: U64 = -1
   var _data: String = ""
   var _final: Bool = false
@@ -71,13 +71,13 @@ class WebsocketHandler is TCPConnectionNotify
                             PayloadMedium else
                             PayloadSmall end
             var mask_key = if use_mask then rb.u32_be() else None end
-            if _payload_type == 0 then
+            if _payload_type == PayloadSmall then
             _expected_size = _payload_len.usize()
             _payload_size = _expected_size.u64()
             _in_header = false
             _base_header = false
             conn.expect(_payload_len.usize())
-            elseif _payload_type == 1 then
+            elseif _payload_type == PayloadMedium then
             _base_header = false
             _expected_size = 2
             conn.expect(2)
@@ -91,8 +91,8 @@ class WebsocketHandler is TCPConnectionNotify
         //Basic header is done. Handling payload len now
         try
             _payload_size = match _payload_type
-            | 1 => rb.u16_be().u64()
-            | 2 => rb.u64_be().u64()
+            | PayloadMedium => rb.u16_be().u64()
+            | PayloadLarge => rb.u64_be().u64()
             else 0 end
             conn.expect(_payload_size.usize())
         end
