@@ -1,4 +1,5 @@
 use "net"
+use "buffered"
 
 primitive OpContinuation
 primitive OpText
