@@ -24,11 +24,11 @@ class trn Frame
     """
     A class representing a single websocket frame which can be sent from/to a server.
     """
-    var final: Bool = false
+    var _final: Bool = false
     var _rsv: (Bool, Bool, Bool) = (false, false, false)
     var _opcode: OpCode = OpText
     var _use_mask: Bool = true
-    let _payload_type: PayloadType
+    var _payload_type: PayloadType = payloadSmall
     var _payload_size:  USize = 0
     var _mask_key: (None | U32) = None
     var _data: String = ""
@@ -41,6 +41,11 @@ class trn Frame
         _opcode = OpText
         _use_mask = true
         _mask_key = 0
+        _payload_type = if data.size() <= 125 then
+                    PayloadSmall else if data.size() <= 65535 then
+                    PayloadMedium else
+                    PayloadLarge end end
+        _final = true
     
     fun ref set_mask_key(key: (None | U32)) =>
         """
